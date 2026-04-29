@@ -29,7 +29,6 @@ public final class UserRepositoryMySQL
         implements SaveUserPort, UpdateUserPort, GetUserByIdPort,
                    GetUserByEmailPort, GetAllUsersPort, DeleteUserPort {
 
-    private final UserPersistenceMapper persistenceMapper = new UserPersistenceMapper();
 
     private static final String SQL_INSERT =
             "INSERT INTO users (id, name, email, password, role, status, created_at, updated_at) "
@@ -62,7 +61,7 @@ public final class UserRepositoryMySQL
 
     @Override
     public UserModel save(final UserModel user) {
-        final UserPersistenceDto dto = persistenceMapper.fromModelToDto(user);
+        final UserPersistenceDto dto = UserPersistenceMapper.fromModelToDto(user);
         executeSave(dto);
         return findByIdOrFail(user.getId());
     }
@@ -79,7 +78,7 @@ public final class UserRepositoryMySQL
 
     @Override
     public UserModel update(final UserModel user) {
-        final UserPersistenceDto dto = persistenceMapper.fromModelToDto(user);
+        final UserPersistenceDto dto = UserPersistenceMapper.fromModelToDto(user);
         executeUpdate(dto);
         return findByIdOrFail(user.getId());
     }
@@ -90,7 +89,7 @@ public final class UserRepositoryMySQL
             statement.setString(1, userId.value());
             final ResultSet resultSet = statement.executeQuery();
             if (!resultSet.next()) return Optional.empty();
-            return Optional.of(persistenceMapper.fromResultSetToModel(resultSet));
+            return Optional.of(UserPersistenceMapper.fromResultSetToModel(resultSet));
         } catch (final SQLException exception) {
             throw PersistenceException.becauseFindByIdFailed(userId.value(), exception);
         }
@@ -102,7 +101,7 @@ public final class UserRepositoryMySQL
             statement.setString(1, email.value());
             final ResultSet resultSet = statement.executeQuery();
             if (!resultSet.next()) return Optional.empty();
-            return Optional.of(persistenceMapper.fromResultSetToModel(resultSet));
+            return Optional.of(UserPersistenceMapper.fromResultSetToModel(resultSet));
         } catch (final SQLException exception) {
             throw PersistenceException.becauseFindByEmailFailed(email.value(), exception);
         }
@@ -112,7 +111,7 @@ public final class UserRepositoryMySQL
     public List<UserModel> getAll() {
         try (final PreparedStatement statement = connection.prepareStatement(SQL_SELECT_ALL)) {
             final ResultSet resultSet = statement.executeQuery();
-            return persistenceMapper.fromResultSetToModelList(resultSet);
+            return UserPersistenceMapper.fromResultSetToModelList(resultSet);
         } catch (final SQLException exception) {
             throw PersistenceException.becauseFindAllFailed(exception);
         }
