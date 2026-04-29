@@ -31,12 +31,12 @@ class DatabaseConnectionFactoryTest {
 
   private DatabaseConfig config;
   // VIOLACIÓN Regla 4 (consecuencia): el factory ya no es @UtilityClass, hay que instanciarlo.
-  private DatabaseConnectionFactory factory;
+  //private DatabaseConnectionFactory factory;
 
   @BeforeEach
   void setUp() {
     config = new DatabaseConfig(HOST, PORT, DB_NAME, USERNAME, PASSWORD);
-    factory = new DatabaseConnectionFactory();
+    //factory = new DatabaseConnectionFactory();
   }
 
   // ── createConnection() — happy path
@@ -51,7 +51,7 @@ class DatabaseConnectionFactoryTest {
           .thenReturn(mockConnection);
 
       // Act
-      final Connection result = factory.createConnection(config);
+      final Connection result = DatabaseConnectionFactory.createConnection(config);
 
       // Assert
       assertSame(mockConnection, result, "must return the connection provided by DriverManager");
@@ -74,7 +74,7 @@ class DatabaseConnectionFactoryTest {
       // Act + Assert
       assertThrows(
           PersistenceException.class,
-          () -> factory.createConnection(config),
+          () -> DatabaseConnectionFactory.createConnection(config),
           "must throw PersistenceException when DriverManager throws SQLException");
     }
   }
