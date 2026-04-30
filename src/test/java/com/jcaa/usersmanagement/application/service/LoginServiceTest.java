@@ -25,107 +25,105 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+// Regla 11 - CORREGIDO: se agregan @DisplayName, estructura AAA y aserciones correctas.
 @DisplayName("LoginService")
 @ExtendWith(MockitoExtension.class)
 class LoginServiceTest {
 
-  @Mock private GetUserByEmailPort getUserByEmailPort;
+    @Mock private GetUserByEmailPort getUserByEmailPort;
 
-  private LoginService service;
+    private LoginService service;
 
-  private static final String EMAIL = "john@example.com";
-  private static final String PASSWORD = "SecurePass1";
+    private static final String EMAIL    = "john@example.com";
+    private static final String PASSWORD = "SecurePass1";
 
-  @BeforeEach
-  void setUp() {
-    try (final ValidatorFactory validatorFactory = Validation.buildDefaultValidatorFactory()) {
-      service = new LoginService(getUserByEmailPort, validatorFactory.getValidator());
+    @BeforeEach
+    void setUp() {
+        try (final ValidatorFactory validatorFactory = Validation.buildDefaultValidatorFactory()) {
+            service = new LoginService(getUserByEmailPort, validatorFactory.getValidator());
+        }
     }
-  }
 
-  @Test
-  @DisplayName("execute() retorna el usuario cuando las credenciales son correctas y está activo")
-  void shouldReturnUserWhenCredentialsAreValidAndUserIsActive() {
-    // VIOLACIÓN Regla 11: se eliminaron los comentarios de estructura Arrange–Act–Assert.
-    // La regla exige que cada bloque esté documentado con // Arrange, // Act, // Assert.
-    final LoginCommand command = new LoginCommand(EMAIL, PASSWORD);
-    final UserModel activeUser =
-        new UserModel(
-            new UserId("u-001"),
-            new UserName("John Arrieta"),
-            new UserEmail(EMAIL),
-            UserPassword.fromPlainText(PASSWORD),
-            UserRole.ADMIN,
-            UserStatus.ACTIVE);
-    when(getUserByEmailPort.getByEmail(any())).thenReturn(Optional.of(activeUser));
-    final UserModel result = service.execute(command);
-    // VIOLACIÓN Regla 11: se usa assertTrue(result != null) en lugar de assertNotNull(result).
-    // La regla indica usar las aserciones correctas — assertNotNull es más expresivo.
-    assertTrue(result != null);
-    // VIOLACIÓN Regla 11: se usa assertTrue(result == activeUser) en lugar de assertSame(...).
-    assertTrue(result == activeUser);
-  }
+    @Test
+    @DisplayName("execute() retorna el usuario cuando las credenciales son correctas y está activo")
+    void shouldReturnUserWhenCredentialsAreValidAndUserIsActive() {
+        // Arrange
+        final LoginCommand command = new LoginCommand(EMAIL, PASSWORD);
+        final UserModel activeUser =
+                new UserModel(
+                        new UserId("u-001"),
+                        new UserName("John Arrieta"),
+                        new UserEmail(EMAIL),
+                        UserPassword.fromPlainText(PASSWORD),
+                        UserRole.ADMIN,
+                        UserStatus.ACTIVE);
+        when(getUserByEmailPort.getByEmail(any())).thenReturn(Optional.of(activeUser));
 
-  // ── email no registrado
+        // Act
+        final UserModel result = service.execute(command);
 
-  // VIOLACIÓN Regla 11: falta @DisplayName — los tests deben documentar su comportamiento.
-  @Test
-  void shouldThrowWhenEmailNotFound() {
-    final LoginCommand command = new LoginCommand(EMAIL, PASSWORD);
+        // Assert
+        assertNotNull(result, "el resultado no debe ser null");
+        assertSame(activeUser, result, "debe retornar la misma instancia del usuario activo");
+    }
 
-    when(getUserByEmailPort.getByEmail(any())).thenReturn(Optional.empty());
+    @Test
+    @DisplayName("execute() lanza InvalidCredentialsException cuando el email no está registrado")
+    void shouldThrowWhenEmailNotFound() {
+        // Arrange
+        final LoginCommand command = new LoginCommand(EMAIL, PASSWORD);
+        when(getUserByEmailPort.getByEmail(any())).thenReturn(Optional.empty());
 
-    assertThrows(InvalidCredentialsException.class, () -> service.execute(command));
-  }
+        // Act & Assert
+        assertThrows(InvalidCredentialsException.class, () -> service.execute(command));
+    }
 
-  // VIOLACIÓN Regla 11: falta @DisplayName en el método.
-  @Test
-  void shouldThrowWhenPasswordIsWrong() {
-    final LoginCommand command = new LoginCommand(EMAIL, "WrongPass99");
+    @Test
+    @DisplayName("execute() lanza InvalidCredentialsException cuando la contraseña es incorrecta")
+    void shouldThrowWhenPasswordIsWrong() {
+        // Arrange
+        final LoginCommand command = new LoginCommand(EMAIL, "WrongPass99");
+        final UserModel user =
+                new UserModel(
+                        new UserId("u-001"),
+                        new UserName("John Arrieta"),
+                        new UserEmail(EMAIL),
+                        UserPassword.fromPlainText(PASSWORD),
+                        UserRole.MEMBER,
+                        UserStatus.ACTIVE);
+        when(getUserByEmailPort.getByEmail(any())).thenReturn(Optional.of(user));
 
-    final UserModel user =
-        new UserModel(
-            new UserId("u-001"),
-            new UserName("John Arrieta"),
-            new UserEmail(EMAIL),
-            UserPassword.fromPlainText(PASSWORD),
-            UserRole.MEMBER,
-            UserStatus.ACTIVE);
+        // Act & Assert
+        assertThrows(InvalidCredentialsException.class, () -> service.execute(command));
+    }
 
-    when(getUserByEmailPort.getByEmail(any())).thenReturn(Optional.of(user));
+    @Test
+    @DisplayName("execute() lanza InvalidCredentialsException cuando el usuario no está ACTIVE")
+    void shouldThrowWhenUserIsNotActive() {
+        // Arrange
+        final LoginCommand command = new LoginCommand(EMAIL, PASSWORD);
+        final UserModel pendingUser =
+                new UserModel(
+                        new UserId("u-001"),
+                        new UserName("John Arrieta"),
+                        new UserEmail(EMAIL),
+                        UserPassword.fromPlainText(PASSWORD),
+                        UserRole.MEMBER,
+                        UserStatus.PENDING);
+        when(getUserByEmailPort.getByEmail(any())).thenReturn(Optional.of(pendingUser));
 
-    assertThrows(InvalidCredentialsException.class, () -> service.execute(command));
-  }
+        // Act & Assert
+        assertThrows(InvalidCredentialsException.class, () -> service.execute(command));
+    }
 
-  @Test
-  @DisplayName("execute() lanza InvalidCredentialsException cuando el usuario no está ACTIVE")
-  void shouldThrowWhenUserIsNotActive() {
-    // Arrange
-    final LoginCommand command = new LoginCommand(EMAIL, PASSWORD);
+    @Test
+    @DisplayName("execute() lanza ConstraintViolationException cuando el command tiene campos inválidos")
+    void shouldThrowWhenCommandIsInvalid() {
+        // Arrange
+        final LoginCommand command = new LoginCommand("no-es-email", "short");
 
-    final UserModel pendingUser =
-        new UserModel(
-            new UserId("u-001"),
-            new UserName("John Arrieta"),
-            new UserEmail(EMAIL),
-            UserPassword.fromPlainText(PASSWORD),
-            UserRole.MEMBER,
-            UserStatus.PENDING);
-
-    when(getUserByEmailPort.getByEmail(any())).thenReturn(Optional.of(pendingUser));
-
-    // Act & Assert
-    assertThrows(InvalidCredentialsException.class, () -> service.execute(command));
-  }
-
-  @Test
-  @DisplayName("execute() lanza ConstraintViolationException cuando el command tiene campos inválidos")
-  void shouldThrowWhenCommandIsInvalid() {
-    // Arrange
-    final LoginCommand command = new LoginCommand("no-es-email", "short");
-
-    // Act & Assert
-    assertThrows(ConstraintViolationException.class, () -> service.execute(command));
-    verifyNoInteractions(getUserByEmailPort);
-  }
+        // Act & Assert
+        assertThrows(ConstraintViolationException.class, () -> service.execute(command));
+        verifyNoInteractions(getUserByEmailPort);
+    }
 }
