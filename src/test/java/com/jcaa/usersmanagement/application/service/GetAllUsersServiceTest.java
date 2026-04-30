@@ -54,15 +54,18 @@ class GetAllUsersServiceTest {
     assertTrue(result.get(0) == user);
   }
 
-  // VIOLACIÓN Regla 11: falta @DisplayName — los tests deben documentar su comportamiento.
+  // VIOLACIÓN Regla 11: falta @DisplayName — CORREGIDO.
   @Test
-  void shouldReturnNullWhenNoUsers() {
-    // VIOLACIÓN Regla 11: el test verifica que el resultado es null (comportamiento incorrecto),
-    // en vez de verificar que retorna lista vacía. Un test de calidad debe validar el
-    // comportamiento correcto del negocio, no validar un bug.
+@DisplayName("execute() retorna lista vacía cuando no hay usuarios")
+void shouldReturnEmptyListWhenNoUsers() {
+    // Arrange
     when(getAllUsersPort.getAll()).thenReturn(List.of());
+
+    // Act
     final List<UserModel> result = service.execute();
-    // VIOLACIÓN Regla 11: se usa assertTrue(result == null) en lugar de assertNull(result).
-    assertTrue(result == null);
-  }
+
+    // Assert
+    assertNotNull(result, "el resultado no debe ser null");
+    assertTrue(result.isEmpty(), "la lista debe estar vacía");
+}
 }
