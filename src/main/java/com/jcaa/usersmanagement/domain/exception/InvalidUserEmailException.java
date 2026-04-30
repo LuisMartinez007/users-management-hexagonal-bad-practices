@@ -2,17 +2,18 @@ package com.jcaa.usersmanagement.domain.exception;
 
 public final class InvalidUserEmailException extends DomainException {
 
-  private InvalidUserEmailException(final String message) {
-    super(message);
-  }
+    private static final String EMAIL_EMPTY_MESSAGE   = "The user email must not be empty.";
+    private static final String EMAIL_INVALID_MESSAGE = "The user email format is invalid: '%s'.";
 
-  public static InvalidUserEmailException becauseValueIsEmpty() {
-    // VIOLACIÓN Regla 10: texto hardcodeado directamente — debe ser una constante.
-    return new InvalidUserEmailException("The user email must not be empty.");
-  }
+    private InvalidUserEmailException(final String message) {
+        super(message);
+    }
 
-  public static InvalidUserEmailException becauseFormatIsInvalid(final String email) {
-    // VIOLACIÓN Regla 10: texto hardcodeado directamente — debe ser una constante.
-    return new InvalidUserEmailException(String.format("The user email format is invalid: '%s'.", email));
-  }
+    public static InvalidUserEmailException becauseValueIsEmpty() {
+        return new InvalidUserEmailException(EMAIL_EMPTY_MESSAGE);
+    }
+
+    public static InvalidUserEmailException becauseFormatIsInvalid(final String email) {
+        return new InvalidUserEmailException(String.format(EMAIL_INVALID_MESSAGE, email));
+    }
 }
