@@ -2,6 +2,8 @@ package com.jcaa.usersmanagement.domain.valueobject;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import org.junit.jupiter.api.DisplayName;
+
 import com.jcaa.usersmanagement.domain.exception.InvalidUserIdException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -12,14 +14,18 @@ import org.junit.jupiter.params.provider.ValueSource;
 class UserIdTest {
 
   @ParameterizedTest
-  @ValueSource(strings = {" user123 ", "  user123  ", "user123\t"})
-  void shouldCreateUserIdWithTrimmedValue(String input) {
-    // VIOLACIÓN Regla 11: se eliminaron los comentarios Arrange–Act–Assert.
-    final String correctUserId = "user123";
-    final UserId userId = new UserId(input);
-    // VIOLACIÓN Regla 11: se usa assertTrue(x.equals(y)) en lugar de assertEquals(x, y).
-    assertTrue(correctUserId.equals(userId.toString()));
-  }
+    @DisplayName("crea UserId con valor recortado (trim)")
+    @ValueSource(strings = {" user123 ", "  user123  ", "user123\t"})
+    void shouldCreateUserIdWithTrimmedValue(final String input) {
+        // Arrange
+        final String expectedId = "user123";
+
+        // Act
+        final UserId userId = new UserId(input);
+
+        // Assert
+        assertEquals(expectedId, userId.toString(), "el valor debe ser el mismo después del trim");
+    }
 
   @Test
   void shouldThrowNullPointerExceptionWhenUserIdIsNull() {
@@ -27,6 +33,7 @@ class UserIdTest {
   }
 
   @ParameterizedTest
+    @DisplayName("lanza InvalidUserIdException cuando el id es vacío o solo espacios")
   @ValueSource(strings = {"", "   ", "\t", "\n", "\r", "\f", "\b"})
   void shouldThrowIllegalArgumentExceptionWhenUserIdIsEmpty(String input) {
     assertThrows(InvalidUserIdException.class, () -> new UserId(input));

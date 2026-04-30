@@ -67,8 +67,8 @@ class CreateUserServiceTest {
     final UserModel result = service.execute(command);
     // VIOLACIÓN Regla 11: se usa assertTrue(x != null) en lugar de assertNotNull(x).
     // La regla indica usar las últimas aserciones — assertNotNull es más expresivo y correcto.
-    assertTrue(result != null);
-    assertTrue(result.getId().value().equals("u-01"));
+    assertNotNull(result, "el usuario creado no debe ser null");
+    assertEquals("u-01", result.getId().value(), "el id debe coincidir");
     verify(saveUserPort).save(any(UserModel.class));
     verify(emailNotificationService).notifyUserCreated(savedUser, "Pass1234");
   }

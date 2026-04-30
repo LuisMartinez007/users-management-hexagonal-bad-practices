@@ -34,38 +34,35 @@ class GetAllUsersServiceTest {
   }
 
   @Test
-  @DisplayName("execute() retorna la lista de usuarios del puerto")
-  void shouldReturnUsersFromPort() {
-    // VIOLACIÓN Regla 11: se eliminaron los comentarios de estructura Arrange–Act–Assert.
-    // La regla exige que los bloques estén documentados con // Arrange, // Act, // Assert.
-    final UserModel user =
-        new UserModel(
-            new UserId("u-001"),
-            new UserName("John Arrieta"),
-            new UserEmail("john@example.com"),
-            UserPassword.fromHash("$2a$12$abcdefghijklmnopqrstuO"),
-            UserRole.ADMIN,
-            UserStatus.ACTIVE);
-    when(getAllUsersPort.getAll()).thenReturn(List.of(user));
-    final List<UserModel> result = service.execute();
-    // VIOLACIÓN Regla 11: se usa assertFalse(result.isEmpty()) y assertTrue(x == y)
-    // en lugar de assertEquals(1, result.size()) y assertSame(user, result.get(0)).
-    assertFalse(result.isEmpty());
-    assertTrue(result.get(0) == user);
+  @DisplayName("execute() retorna lista vacía cuando no hay usuarios")
+  void shouldReturnEmptyListWhenNoUsers() {
+      // Arrange
+      when(getAllUsersPort.getAll()).thenReturn(List.of());
+
+      // Act
+      final List<UserModel> result = service.execute();
+
+      // Assert
+      assertNotNull(result);
+      assertTrue(result.isEmpty());
   }
 
-  // VIOLACIÓN Regla 11: falta @DisplayName — CORREGIDO.
   @Test
-@DisplayName("execute() retorna lista vacía cuando no hay usuarios")
-void shouldReturnEmptyListWhenNoUsers() {
-    // Arrange
-    when(getAllUsersPort.getAll()).thenReturn(List.of());
+  @DisplayName("execute() retorna la lista de usuarios del puerto")
+  void shouldReturnUsersFromPort() {
+      // Arrange
+      final UserModel user = new UserModel(
+              new UserId("u-001"), new UserName("John Arrieta"),
+              new UserEmail("john@example.com"),
+              UserPassword.fromHash("$2a$12$abcdefghijklmnopqrstuO"),
+              UserRole.ADMIN, UserStatus.ACTIVE);
+      when(getAllUsersPort.getAll()).thenReturn(List.of(user));
 
-    // Act
-    final List<UserModel> result = service.execute();
+      // Act
+      final List<UserModel> result = service.execute();
 
-    // Assert
-    assertNotNull(result, "el resultado no debe ser null");
-    assertTrue(result.isEmpty(), "la lista debe estar vacía");
-}
+      // Assert
+      assertFalse(result.isEmpty(), "la lista no debe estar vacía");
+      assertSame(user, result.get(0), "debe retornar el mismo usuario del puerto");
+  }
 }

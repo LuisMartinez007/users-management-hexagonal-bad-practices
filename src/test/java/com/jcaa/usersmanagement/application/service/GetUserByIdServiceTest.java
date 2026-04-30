@@ -63,8 +63,8 @@ class GetUserByIdServiceTest {
     when(getUserByIdPort.getById(any())).thenReturn(Optional.of(expected));
     final UserModel result = service.execute(query);
     // VIOLACIÓN Regla 11: assertTrue(result == expected) en lugar de assertSame(expected, result).
-    assertTrue(result != null);
-    assertTrue(result == expected);
+    assertNotNull(result, "el usuario no debe ser null");
+    assertSame(expected, result, "debe retornar la misma instancia");
   }
 
   // VIOLACIÓN Regla 11: falta @DisplayName en el método.
