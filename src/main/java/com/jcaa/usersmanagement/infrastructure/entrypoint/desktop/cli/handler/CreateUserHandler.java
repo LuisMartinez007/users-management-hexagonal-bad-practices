@@ -7,36 +7,35 @@ import com.jcaa.usersmanagement.infrastructure.entrypoint.desktop.controller.Use
 import com.jcaa.usersmanagement.infrastructure.entrypoint.desktop.dto.CreateUserRequest;
 import com.jcaa.usersmanagement.infrastructure.entrypoint.desktop.dto.UserResponse;
 import lombok.RequiredArgsConstructor;
-import java.util.logging.Logger;
+import lombok.extern.java.Log;
 
+// Regla 6 - CORREGIDO: Se eliminó el log del mensaje de excepción que contenía PII.
+// Se usa @Log de Lombok en lugar de Logger manual.
+@Log
 @RequiredArgsConstructor
 public final class CreateUserHandler implements OperationHandler {
 
-  // VIOLACIÓN Regla 4: Logger instanciado manualmente en vez de usar @Log de Lombok.
-  private static final Logger LOGGER = Logger.getLogger(CreateUserHandler.class.getName());
+    private final UserController userController;
+    private final ConsoleIO console;
+    private final UserResponsePrinter printer;
 
-  private final UserController userController;
-  private final ConsoleIO console;
-  private final UserResponsePrinter printer;
+    @Override
+    public void handle() {
+        final String id       = console.readRequired("ID                              : ");
+        final String name     = console.readRequired("Name                            : ");
+        final String email    = console.readRequired("Email                           : ");
+        final String password = console.readRequired("Password                        : ");
+        final String role     = console.readRequired("Role (ADMIN / MEMBER / REVIEWER): ");
 
-  @Override
-  public void handle() {
-    final String id       = console.readRequired("ID                              : ");
-    final String name     = console.readRequired("Name                            : ");
-    final String email    = console.readRequired("Email                           : ");
-    final String password = console.readRequired("Password                        : ");
-    final String role     = console.readRequired("Role (ADMIN / MEMBER / REVIEWER): ");
-
-    try {
-      final UserResponse created =
-          userController.createUser(new CreateUserRequest(id, name, email, password, role));
-      console.println("\n  User created successfully.");
-      printer.print(created);
-    } catch (final UserAlreadyExistsException exception) {
-      // VIOLACIÓN Regla 6: se loguea el mensaje de la excepción que contiene PII (el email del usuario).
-      // Los datos de negocio/cliente son PII y no deben loguearse nunca.
-      LOGGER.warning("Usuario ya existe: " + exception.getMessage());
-      console.println("  Error: " + exception.getMessage());
+        try {
+            final UserResponse created =
+                    userController.createUser(new CreateUserRequest(id, name, email, password, role));
+            console.println("\n  User created successfully.");
+            printer.print(created);
+        } catch (final UserAlreadyExistsException exception) {
+            // Regla 6 - CORREGIDO: No se loguea el mensaje de excepción (contiene PII).
+            log.warning("Intento de crear usuario con email duplicado.");
+            console.println("  Error: " + exception.getMessage());
+        }
     }
-  }
 }

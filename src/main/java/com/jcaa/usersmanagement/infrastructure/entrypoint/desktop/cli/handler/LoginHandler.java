@@ -9,27 +9,27 @@ import com.jcaa.usersmanagement.infrastructure.entrypoint.desktop.dto.UserRespon
 import lombok.RequiredArgsConstructor;
 import lombok.extern.java.Log;
 
+// Regla 6 - CORREGIDO: Se eliminó el log del email del usuario (PII).
 @Log
 @RequiredArgsConstructor
 public final class LoginHandler implements OperationHandler {
 
-  private final UserController userController;
-  private final ConsoleIO console;
-  private final UserResponsePrinter printer;
+    private final UserController userController;
+    private final ConsoleIO console;
+    private final UserResponsePrinter printer;
 
-  @Override
-  public void handle() {
-    final String email    = console.readRequired("Email   : ");
-    final String password = console.readRequired("Password: ");
-    try {
-      final UserResponse user = userController.login(new LoginRequest(email, password));
-      console.println("\n  Login successful. Welcome!");
-      printer.print(user);
-    } catch (final InvalidCredentialsException exception) {
-      // VIOLACIÓN Regla 6: se loguea el email del usuario (PII) al registrar el fallo de login.
-      // Los datos de negocio/cliente son PII y NO deben loguearse nunca.
-      log.warning("Intento de login fallido para email: " + email);
-      console.println("  Error: " + exception.getMessage());
+    @Override
+    public void handle() {
+        final String email    = console.readRequired("Email   : ");
+        final String password = console.readRequired("Password: ");
+        try {
+            final UserResponse user = userController.login(new LoginRequest(email, password));
+            console.println("\n  Login successful. Welcome!");
+            printer.print(user);
+        } catch (final InvalidCredentialsException exception) {
+            // Regla 6 - CORREGIDO: No se loguea el email (PII).
+            log.warning("Intento de login fallido.");
+            console.println("  Error: " + exception.getMessage());
+        }
     }
-  }
 }
