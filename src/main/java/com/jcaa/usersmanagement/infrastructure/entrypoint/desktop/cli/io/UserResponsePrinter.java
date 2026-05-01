@@ -2,7 +2,7 @@ package com.jcaa.usersmanagement.infrastructure.entrypoint.desktop.cli.io;
 
 import com.jcaa.usersmanagement.infrastructure.entrypoint.desktop.dto.UserResponse;
 import java.util.List;
-import java.util.Optional;
+import java.util.Map;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
@@ -44,12 +44,15 @@ public final class UserResponsePrinter {
         console.println(summary.toString());
     }
 
+    // Regla 16 - CORREGIDO: se reemplaza la cadena if/else por un Map.
+    private static final Map<String, String> STATUS_LABELS = Map.of(
+            "ACTIVE",   "Activo",
+            "INACTIVE", "Inactivo",
+            "PENDING",  "Pendiente de activacion",
+            "BLOCKED",  "Bloqueado",
+            "DELETED",  "Eliminado");
+
     private static String getStatusLabel(final String status) {
-        if ("ACTIVE".equals(status))   return "Activo";
-        if ("INACTIVE".equals(status)) return "Inactivo";
-        if ("PENDING".equals(status))  return "Pendiente de activacion";
-        if ("BLOCKED".equals(status))  return "Bloqueado";
-        if ("DELETED".equals(status))  return "Eliminado";
-        return "Estado desconocido";
+        return STATUS_LABELS.getOrDefault(status, "Estado desconocido");
     }
 }
